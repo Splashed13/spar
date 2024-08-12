@@ -13,7 +13,7 @@ from spar_msgs.msg import FlightMotionAction, FlightMotionGoal
 
 def send_wp(spar_client, x, y, z, yaw):
 	speed = rospy.get_param("~speed", 1.0)
-	accuracy = rospy.get_param("~accuracy", 0.1)
+	accuracy = rospy.get_param("~accuracy", 0.3)
 
 	goal = FlightMotionGoal()
 	goal.motion = FlightMotionGoal.MOTION_GOTO
@@ -45,12 +45,18 @@ def send_wps(spar_client):
 
 	# List of waypoints
 	# [X, Y, Z, Yaw]
-	wps = [[ 0.0, 0.0, 1.0, 0.0],
-		   [ 1.0, 1.0, 1.0, 0.0],
-		   [-1.0, 1.0, 1.0, 0.0],
-		   [-1.0,-1.0, 1.0, 0.0],
-		   [ 1.0,-1.0, 1.0, 0.0],
-		   [ 0.0, 0.0, 1.0, 0.0]]
+	wps = [[ 0.0, 0.0, 2.0, 0.0],
+			[ 2.5, 2.5, 2.0, 0.0],
+			[ -2.5, 2.5, 2.0, 0.0],
+			[ -2.5, 1.5, 2.0, 0.0],
+			[ 2.5, 1.5, 2.0, 0.0],
+			[ 2.5, 0.6, 2.0, 0.0],
+			[ -2.5, 0.6, 2.0, 0.0],
+			[ -2.5, -0.8, 2.0, 0.0],
+			[ 2.5, -0.8, 2.0, 0.0],
+			[ 2.5, -2.5, 2.0, 0.0],
+			[ -2.5, -2.5, 2.0, 0.0],
+			[ 0.0, 0.0, 0.0, 0.0]]
 
 	# Loop through each waypoint in our list
 	i = 0
