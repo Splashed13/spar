@@ -1,0 +1,49 @@
+import rospy
+import RPi.GPIO as GPIO
+from std_msgs.msg import Bool
+import time
+
+# Define GPIO pins for the servos
+SERVO1_PIN = 17
+SERVO2_PIN = 18
+
+# Setup GPIO mode
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(SERVO1_PIN, GPIO.OUT)
+GPIO.setup(SERVO2_PIN, GPIO.OUT)
+
+# Setup PWM for servos
+servo1 = GPIO.PWM(SERVO1_PIN, 50)
+servo2 = GPIO.PWM(SERVO2_PIN, 50)
+
+# Function to turn the servo to a specific angle
+def set_servo_angle(servo, angle):
+    duty_cycle = (angle / 18) + 2
+    servo.ChangeDutyCycle(duty_cycle)
+    time.sleep(0.5)  # Allow time for the servo to move
+    servo.ChangeDutyCycle(0)  # Stop sending signal
+
+# Initialize servos to 0 degrees
+servo1.start(0)
+servo2.start(0)
+
+try:
+    while True:
+        signal = input("Enter signal (square/circle): ").strip().lower()
+
+        if signal == "square":
+            print("Turning servo 1 to 180 degrees")
+            set_servo_angle(servo1, 180)
+        elif signal == "circle":
+            print("Turning servo 2 to 180 degrees")
+            set_servo_angle(servo2, 180)
+        else:
+            print("Unknown signal")
+
+except KeyboardInterrupt:
+    print("Program terminated")
+
+finally:
+    servo1.stop()
+    servo2.stop()
+    GPIO.cleanup()
