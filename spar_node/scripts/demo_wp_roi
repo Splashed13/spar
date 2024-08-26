@@ -117,8 +117,8 @@ class Guidance():
 
 		return roll, pitch, yaw
 
-	def display_path(self, wps):
-		pub_path = rospy.Publisher("/guidance/path", Path, queue_size=10, latch=True)
+	def display_path(self, wps, type_):
+		pub_path = rospy.Publisher(f'/guidance/path{type_}', Path, queue_size=10, latch=True)
 		msg = Path()
 		msg.header.frame_id = "/map"
 		msg.header.stamp = rospy.Time.now()
@@ -334,7 +334,8 @@ class Guidance():
 					else:
 						rospy.logerr("solution not found")
 					print(f'Breadcrumb waypoints: {breadcrumbWPs}')
-					self.display_path(breadcrumbWPs)
+					self.display_path(breadcrumbWPs, "Breadcrumb")
+
 					self.send_wp(self.waypoints[self.waypoint_counter])
 					# Increment our waypoint counter
 					self.waypoint_counter += 1
@@ -383,8 +384,9 @@ def main(args):
 		[ 0.0, 0.0, 0.0, 0.0]]
 
 	# Create our guidance class option
+	
 	guide = Guidance(wps)
-
+	guide.display_path(wps, "Waypoints")
 	# Spin!
 	rospy.spin()
 

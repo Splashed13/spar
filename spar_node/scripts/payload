@@ -1,49 +1,63 @@
-import rospy
 import RPi.GPIO as GPIO
-from std_msgs.msg import Bool
 import time
 
-# Define GPIO pins for the servos
-SERVO1_PIN = 17
-SERVO2_PIN = 18
+# will set pin mode, or keep the preset mode
+mode = GPIO.getmode()
+if mode == None:
+    GPIO.setmode(GPIO.BCM)
+else:
+    GPIO.setmode(mode)
+    
+# DEFINE YOUR SERVO PINS
+servo1_pin = 17
+servo2_pin = 18
 
-# Setup GPIO mode
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(SERVO1_PIN, GPIO.OUT)
-GPIO.setup(SERVO2_PIN, GPIO.OUT)
+# SET PINS BE OUTPUTS
+GPIO.setup(servo1_pin, GPIO.OUT)
+GPIO.setup(servo2_pin, GPIO.OUT)
 
-# Setup PWM for servos
-servo1 = GPIO.PWM(SERVO1_PIN, 50)
-servo2 = GPIO.PWM(SERVO2_PIN, 50)
+# SET OUTPUT PINS TO PWM
+servo1 = GPIO.PWM(servo1_pin, 50)
+servo2 = GPIO.PWM(servo2_pin, 50)
 
-# Function to turn the servo to a specific angle
-def set_servo_angle(servo, angle):
-    duty_cycle = (angle / 18) + 2
-    servo.ChangeDutyCycle(duty_cycle)
-    time.sleep(0.5)  # Allow time for the servo to move
-    servo.ChangeDutyCycle(0)  # Stop sending signal
-
-# Initialize servos to 0 degrees
+# START PWM SO SERVO IS STILL
 servo1.start(0)
 servo2.start(0)
 
-try:
-    while True:
-        signal = input("Enter signal (square/circle): ").strip().lower()
+# SERVO MOVE FUNCTION
+def set_servo_angle(servo, des_angle):
+    # calc the req duty cycle
+    duty = 2 + (des_angle // 18)
+    # if its servo 1
+    if servo == 1:
+        servo1.ChangeDutyCycle(duty)
+        time.sleep(1)
+        servo1.ChangeDutyCycle(0)
+    elif servo == 2:
+        servo2.ChangeDutyCycle(duty)
+        time.sleep(1)
+        servo2.ChangeDutyCycle(0)
 
-        if signal == "square":
-            print("Turning servo 1 to 180 degrees")
-            set_servo_angle(servo1, 180)
-        elif signal == "circle":
-            print("Turning servo 2 to 180 degrees")
-            set_servo_angle(servo2, 180)
-        else:
-            print("Unknown signal")
+# TEST FUNCTION
+def test_function():
+    try:
+        count = 0
+        while count < 7:
+            servo = int(input("Enter the Servo (1 or 2)"))
+            angle = int(input("Please Enter your desired angle (0 -> 180)"))
+            # check inputs correct
+            if servo != 1 and servo != 2 or angle > 180:
+                print("Incorrect Values. Try Again")
+            else:
+                print("Moving Now")
+                set_servo_angle(servo, angle)
+            count += 1
+    finally:
+        # cleanup at the end of the program
+        servo1.stop()
+        servo2.stop()
+        GPIO.cleanup()
 
-except KeyboardInterrupt:
-    print("Program terminated")
-
-finally:
-    servo1.stop()
-    servo2.stop()
-    GPIO.cleanup()
+# run the test function
+test_function()
+print("Test Concluded")
