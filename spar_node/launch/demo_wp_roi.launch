@@ -9,6 +9,9 @@
 		<param name="acc_pos" type="double" value="0.1" />
 		<param name="acc_yaw" type="double" value="0.1" />
 
+		<!-- survey altitude -->
+		<param name="survey_altitude" type="double" value="1.0" />
+
 		<!-- Spar parameters -->
 		<param name="action_topic" type="string" value="spar/flight" />
 

@@ -43,6 +43,8 @@ class Guidance():
 		# Save the input waypoints
 		self.waypoints = waypoints
 
+		self.display_path(waypoints, "Waypoints")
+
 		self.current_yaw = None
 		self.current_orientation = None
 		self.survey_altitude = rospy.get_param("~survey_altitude", 1)
@@ -193,9 +195,11 @@ class Guidance():
 	# This function will check receive the current pose of the UAV constantly
 	def callback_pose(self, msg_in):
 		# Store the current position at all times so it can be accessed later
-		self.current_location = msg_in.pose.position
+		if(msg_in.pose.position):
+			self.current_location = msg_in.pose.position
 		# convert msg_in.pose.orientation (quaternion) to rpy.
-		_, _, self.current_yaw = self.quaternion_to_rpy(msg_in.pose.orientation)
+		if(msg_in.pose.orientation):
+			_, _, self.current_yaw = self.quaternion_to_rpy(msg_in.pose.orientation)
 		
 	# This function will fire whenever a ROI pose message is sent
 	# It is also responsible for handling the ROI "inspection task"
@@ -327,18 +331,26 @@ class Guidance():
 										res.path.poses[i].position.x,
 										res.path.poses[i].position.y,
 										res.path.poses[i].position.z)
+							
+							# attempt to maintain current yaw during obstacle avoidance
+							yaw_to_use = self.current_yaw if self.current_yaw is not None else 0
 
 							breadcrumbWPs.append([res.path.poses[i].position.x,
 										res.path.poses[i].position.y,
-										self.survey_altitude, self.current_yaw])
+										self.survey_altitude, yaw_to_use])
+							
 					else:
 						rospy.logerr("solution not found")
 					print(f'Breadcrumb waypoints: {breadcrumbWPs}')
-					self.display_path(breadcrumbWPs, "Breadcrumb")
-
-					self.send_wp(self.waypoints[self.waypoint_counter])
-					# Increment our waypoint counter
-					self.waypoint_counter += 1
+					if(len(breadcrumbWPs) > 1):
+						self.display_path(breadcrumbWPs, "Breadcrumb")
+						for i in range(len(breadcrumbWPs)):
+							self.send_wp(breadcrumbWPs[i])
+						self.waypoint_counter += 1
+					else:
+						self.send_wp(self.waypoints[self.waypoint_counter])
+						# Increment our waypoint counter
+						self.waypoint_counter += 1
 				else:
 					# Else the mission is over, shutdown and quit the node
 					# XXX:	This could be used to restart the mission back to the
@@ -366,7 +378,7 @@ def main(args):
 	survey_altitude = rospy.get_param("~survey_altitude", 1)
 
 	if survey_altitude > 4 or survey_altitude < 0:
-		rospy.logwarn("Survey Altitude to high must be < 4m")
+		rospy.logwarn("Survey Altitude to high must be 0m < x < 4m")
 		return 
 
 	wps = [[ 0.0, 0.0, survey_altitude, 0.0],
@@ -384,9 +396,8 @@ def main(args):
 		[ 0.0, 0.0, 0.0, 0.0]]
 
 	# Create our guidance class option
-	
 	guide = Guidance(wps)
-	guide.display_path(wps, "Waypoints")
+	
 	# Spin!
 	rospy.spin()
 
