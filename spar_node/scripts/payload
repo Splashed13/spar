@@ -46,7 +46,8 @@ def test_function():
             servo = int(input("Enter the Servo (1 or 2)"))
             angle = int(input("Please Enter your desired angle (0 -> 180)"))
             # check inputs correct
-            if servo != 1 and servo != 2 or angle > 180:
+            # or angle > 180
+            if servo != 1 and servo != 2:
                 print("Incorrect Values. Try Again")
             else:
                 print("Moving Now")

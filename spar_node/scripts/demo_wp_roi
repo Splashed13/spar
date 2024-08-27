@@ -419,7 +419,6 @@ def main(args):
 		[ 0.0, 0.0, 0.0, 0.0]]
 
 	# Create our guidance class option
-	
 	guide = Guidance(wps)
 	
 	# Spin!
